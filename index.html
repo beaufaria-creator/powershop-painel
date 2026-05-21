@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PowerShop · Painel de Vendas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0f1117;
+    --bg2:       #181c27;
+    --bg3:       #1f2435;
+    --border:    rgba(255,255,255,0.07);
+    --border2:   rgba(255,255,255,0.13);
+    --text:      #e8eaf0;
+    --text2:     #8a90a4;
+    --text3:     #555d72;
+    --accent:    #FFDF00;
+    --accent2:   #FFC000;
+    --green:     #2dca8c;
+    --red:       #f06262;
+    --blue:      #4f9cf9;
+    --orange:    #f0963a;
+    --radius:    10px;
+    --radius-lg: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-mark {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-mark svg { width: 18px; height: 18px; }
+  .logo-name { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-sub  { font-size: 12px; color: var(--text2); margin-left: 2px; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  #last-update { font-size: 12px; color: var(--text3); }
+  .btn-refresh {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-refresh svg { width: 14px; height: 14px; }
+
+  /* ── LAYOUT ── */
+  .page { padding: 24px 28px; max-width: 1600px; margin: 0 auto; }
+
+  /* ── FILTROS ── */
+  .filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 140px; }
+  .filter-group label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: .6px; }
+  .filter-group input,
+  .filter-group select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 7px 10px;
+    outline: none;
+    transition: border-color .15s;
+    height: 34px;
+  }
+  .filter-group input:focus,
+  .filter-group select:focus { border-color: var(--accent); }
+  .filter-group select option { background: var(--bg3); }
+  .btn-clear {
+    align-self: flex-end;
+    padding: 0 16px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .btn-clear:hover { border-color: var(--red); color: var(--red); }
+
+  /* ── KPI CARDS ── */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    transition: border-color .2s;
+  }
+  .kpi:hover { border-color: var(--border2); }
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .kpi-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .kpi-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -1px;
+    color: var(--text);
+  }
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+  .kpi.accent .kpi-value { color: var(--accent); }
+  .kpi.green  .kpi-value { color: var(--green);  }
+  .kpi.blue   .kpi-value { color: var(--blue);   }
+  .kpi.orange .kpi-value { color: var(--orange); }
+  .kpi.red    .kpi-value { color: var(--red);    }
+
+  /* ── TABELA ── */
+  .table-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-title { font-size: 13px; font-weight: 500; color: var(--text2); }
+  #row-count {
+    font-size: 12px;
+    color: var(--text3);
+    background: var(--bg3);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .table-scroll { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    min-width: 1100px;
+  }
+  thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    background: var(--bg2);
+    position: sticky;
+    top: 0;
+  }
+  thead th:hover { color: var(--text); }
+  thead th.sorted { color: var(--accent); }
+  thead th .sort-icon { margin-left: 4px; opacity: .5; }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .1s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg3); }
+  tbody td {
+    padding: 10px 14px;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+  td.num { font-family: 'DM Mono', monospace; font-size: 12px; text-align: right; }
+  td.center { text-align: center; }
+  .badge-ml {
+    display: inline-block;
+    background: rgba(255,223,0,.12);
+    color: var(--accent);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid rgba(255,223,0,.2);
+  }
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .pill.good { background: rgba(45,202,140,.12); color: var(--green); border: 1px solid rgba(45,202,140,.2); }
+  .pill.mid  { background: rgba(240,150,58,.12);  color: var(--orange); border: 1px solid rgba(240,150,58,.2); }
+  .pill.bad  { background: rgba(240,98,98,.12);   color: var(--red);  border: 1px solid rgba(240,98,98,.2); }
+  td.pedido-col { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+  td.titulo-col { max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+  td.sku-col    { font-family: 'DM Mono', monospace; font-size: 11px; }
+
+  /* Paginação */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .page-info { font-size: 12px; color: var(--text3); }
+  .page-btns { display: flex; gap: 6px; }
+  .page-btn {
+    padding: 5px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .page-btn:disabled { opacity: .3; cursor: default; }
+  .page-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+
+  /* Loading / empty */
+  .state-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 60px 20px;
+    color: var(--text3);
+    font-size: 13px;
+  }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Configuração modal */
+  .config-banner {
+    display: none;
+    background: rgba(255,223,0,.08);
+    border: 1px solid rgba(255,223,0,.25);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  .config-banner.visible { display: block; }
+  .config-banner strong { color: var(--accent); }
+  .config-banner code {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 18 18" fill="none">
+        <rect x="1" y="1" width="7" height="7" rx="2" fill="#000"/>
+        <rect x="10" y="1" width="7" height="7" rx="2" fill="#000"/>
+        <rect x="1" y="10" width="7" height="7" rx="2" fill="#000"/>
+        <rect x="10" y="10" width="7" height="7" rx="2" fill="#000" opacity=".4"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-name">PowerShop</div>
+      <div class="logo-sub">Painel de Vendas · Mercado Livre</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span id="last-update">—</span>
+    <button class="btn-refresh" onclick="loadData()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M14 8A6 6 0 1 1 8 2a6 6 0 0 1 4.243 1.757M14 2v4h-4"/>
+      </svg>
+      Atualizar
+    </button>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- Banner de configuração -->
+  <div class="config-banner" id="config-banner">
+    ⚙️ <strong>Configure as credenciais do Supabase</strong> — Edite as variáveis
+    <code>SUPABASE_URL</code> e <code>SUPABASE_KEY</code> no topo deste arquivo HTML,
+    depois recarregue a página. Veja o guia completo no README do repositório.
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Data inicial</label>
+      <input type="date" id="f-date-from">
+    </div>
+    <div class="filter-group">
+      <label>Data final</label>
+      <input type="date" id="f-date-to">
+    </div>
+    <div class="filter-group">
+      <label>Marketplace</label>
+      <select id="f-marketplace">
+        <option value="">Todos</option>
+        <option value="Mercado Livre">Mercado Livre</option>
+      </select>
+    </div>
+    <div class="filter-group" style="min-width:180px;">
+      <label>SKU</label>
+      <select id="f-sku"><option value="">Todos os SKUs</option></select>
+    </div>
+    <div class="filter-group" style="min-width:220px; flex:2;">
+      <label>Título do Anúncio</label>
+      <input type="text" id="f-titulo" placeholder="Buscar por título...">
+    </div>
+    <button class="btn-clear" onclick="clearFilters()">Limpar filtros</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpis" id="kpis">
+    <div class="kpi accent">
+      <div class="kpi-label"><span class="kpi-dot" style="background:var(--accent)"></span>Valor Vendido</div>
+      <div class="kpi-value" id="kpi-vendido">—</div>
+      <div class="kpi-sub" id="kpi-vendido-count">— pedidos</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label"><span class="kpi-dot" style="background:var(--text3)"></span>Custo de Mercadoria</div>
+      <div class="kpi-value" id="kpi-custo-merc">—</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label"><span class="kpi-dot" style="background:var(--green)"></span>Margem Bruta R$</div>
+      <div class="kpi-value" id="kpi-mb-rs">—</div>
+      <div class="kpi-sub" id="kpi-mb-pct">—%</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label"><span class="kpi-dot" style="background:var(--blue)"></span>Custo de Tarifa</div>
+      <div class="kpi-value" id="kpi-tarifa">—</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label"><span class="kpi-dot" style="background:var(--blue)"></span>Custo de Frete</div>
+      <div class="kpi-value" id="kpi-frete">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label"><span class="kpi-dot" style="background:var(--text3)"></span>Impostos</div>
+      <div class="kpi-value" id="kpi-impostos">—</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label"><span class="kpi-dot" style="background:var(--green)"></span>Margem de Contribuição R$</div>
+      <div class="kpi-value" id="kpi-mc-rs">—</div>
+      <div class="kpi-sub" id="kpi-mc-pct">—%</div>
+    </div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Detalhes por Pedido</span>
+      <span id="row-count">carregando...</span>
+    </div>
+    <div class="table-scroll">
+      <table id="sales-table">
+        <thead>
+          <tr>
+            <th onclick="sortBy('data_venda')">Data <span class="sort-icon">↕</span></th>
+            <th>Marketplace</th>
+            <th onclick="sortBy('numero_pedido')">Pedido <span class="sort-icon">↕</span></th>
+            <th onclick="sortBy('numero_anuncio')">Anúncio <span class="sort-icon">↕</span></th>
+            <th onclick="sortBy('sku')">SKU <span class="sort-icon">↕</span></th>
+            <th onclick="sortBy('titulo_anuncio')">Título do Anúncio <span class="sort-icon">↕</span></th>
+            <th onclick="sortBy('valor_vendido')" style="text-align:right">Valor Vendido <span class="sort-icon">↕</span></th>
+            <th onclick="sortBy('custo_mercadoria')" style="text-align:right">Custo Merc. <span class="sort-icon">↕</span></th>
+            <th onclick="sortBy('margem_bruta_pct')" style="text-align:right">MB% <span class="sort-icon">↕</span></th>
+            <th onclick="sortBy('custo_tarifa')" style="text-align:right">Tarifa <span class="sort-icon">↕</span></th>
+            <th onclick="sortBy('custo_frete')" style="text-align:right">Frete <span class="sort-icon">↕</span></th>
+            <th style="text-align:right">Impostos</th>
+            <th onclick="sortBy('margem_contribuicao_pct')" style="text-align:right">MC% <span class="sort-icon">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="sales-body">
+          <tr><td colspan="13"><div class="state-box"><div class="spinner"></div>Carregando dados...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span class="page-info" id="page-info">—</span>
+      <div class="page-btns" id="page-btns"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  CONFIGURAÇÃO — substitua com os valores do seu projeto
+// ═══════════════════════════════════════════════════════
+const SUPABASE_URL = "https://SEU-PROJETO.supabase.co";
+const SUPABASE_KEY = "SUA-ANON-KEY-AQUI";
+const TABELA       = "vendas_meli";
+// ═══════════════════════════════════════════════════════
+
+let allData       = [];
+let filtered      = [];
+let sortCol       = "data_venda";
+let sortAsc       = false;
+let currentPage   = 1;
+const PAGE_SIZE   = 50;
+
+const isConfigured = () =>
+  !SUPABASE_URL.includes("SEU-PROJETO") && !SUPABASE_KEY.includes("SUA-ANON-KEY");
+
+const brl = v => new Intl.NumberFormat("pt-BR", {
+  style: "currency", currency: "BRL", minimumFractionDigits: 2
+}).format(v || 0);
+
+const pct = v => ((v || 0) * 100).toFixed(1) + "%";
+
+async function loadData() {
+  if (!isConfigured()) {
+    document.getElementById("config-banner").classList.add("visible");
+    document.getElementById("sales-body").innerHTML =
+      `<tr><td colspan="13"><div class="state-box">⚙️ Configure SUPABASE_URL e SUPABASE_KEY no HTML</div></td></tr>`;
+    document.getElementById("row-count").textContent = "não configurado";
+    return;
+  }
+
+  document.getElementById("sales-body").innerHTML =
+    `<tr><td colspan="13"><div class="state-box"><div class="spinner"></div>Buscando dados...</div></td></tr>`;
+  document.getElementById("row-count").textContent = "carregando...";
+
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/${TABELA}?select=*&order=data_venda.desc&limit=10000`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    allData = await res.json();
+
+    populateSkuFilter();
+    applyFilters();
+
+    document.getElementById("last-update").textContent =
+      "Atualizado: " + new Date().toLocaleString("pt-BR");
+  } catch (err) {
+    document.getElementById("sales-body").innerHTML =
+      `<tr><td colspan="13"><div class="state-box">❌ Erro ao carregar dados: ${err.message}</div></td></tr>`;
+    document.getElementById("row-count").textContent = "erro";
+  }
+}
+
+function populateSkuFilter() {
+  const skus = [...new Set(allData.map(r => r.sku).filter(Boolean))].sort();
+  const sel = document.getElementById("f-sku");
+  sel.innerHTML = `<option value="">Todos os SKUs</option>` +
+    skus.map(s => `<option value="${s}">${s}</option>`).join("");
+}
+
+function applyFilters() {
+  const df   = document.getElementById("f-date-from").value;
+  const dt   = document.getElementById("f-date-to").value;
+  const mkt  = document.getElementById("f-marketplace").value;
+  const sku  = document.getElementById("f-sku").value;
+  const tit  = document.getElementById("f-titulo").value.toLowerCase().trim();
+
+  filtered = allData.filter(r => {
+    if (df && r.data_venda < df) return false;
+    if (dt && r.data_venda > dt) return false;
+    if (mkt && r.marketplace !== mkt) return false;
+    if (sku && r.sku !== sku) return false;
+    if (tit && !(r.titulo_anuncio || "").toLowerCase().includes(tit)) return false;
+    return true;
+  });
+
+  sortData();
+  currentPage = 1;
+  updateKPIs();
+  renderPage();
+}
+
+function sortData() {
+  filtered.sort((a, b) => {
+    let av = a[sortCol] ?? "", bv = b[sortCol] ?? "";
+    if (typeof av === "string") av = av.toLowerCase();
+    if (typeof bv === "string") bv = bv.toLowerCase();
+    return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+  });
+}
+
+function sortBy(col) {
+  if (sortCol === col) sortAsc = !sortAsc;
+  else { sortCol = col; sortAsc = false; }
+  document.querySelectorAll("thead th").forEach(th => th.classList.remove("sorted"));
+  event.currentTarget.classList.add("sorted");
+  sortData();
+  renderPage();
+}
+
+function updateKPIs() {
+  const sum = (f) => filtered.reduce((a, r) => a + (parseFloat(r[f]) || 0), 0);
+  const n   = filtered.length;
+
+  const vendido    = sum("valor_vendido");
+  const custoMerc  = sum("custo_mercadoria");
+  const tarifa     = sum("custo_tarifa");
+  const frete      = sum("custo_frete");
+  const impostos   = sum("custo_impostos");
+  const mbRs       = vendido - custoMerc;
+  const mcRs       = mbRs - tarifa - frete - impostos;
+  const mbPct      = vendido ? mbRs / vendido : 0;
+  const mcPct      = mbRs   ? mcRs / mbRs    : 0;
+
+  document.getElementById("kpi-vendido").textContent       = brl(vendido);
+  document.getElementById("kpi-vendido-count").textContent = `${n} pedido${n !== 1 ? "s" : ""}`;
+  document.getElementById("kpi-custo-merc").textContent    = brl(custoMerc);
+  document.getElementById("kpi-mb-rs").textContent         = brl(mbRs);
+  document.getElementById("kpi-mb-pct").textContent        = pct(mbPct);
+  document.getElementById("kpi-tarifa").textContent        = brl(tarifa);
+  document.getElementById("kpi-frete").textContent         = brl(frete);
+  document.getElementById("kpi-impostos").textContent      = brl(impostos);
+  document.getElementById("kpi-mc-rs").textContent         = brl(mcRs);
+  document.getElementById("kpi-mc-pct").textContent        = pct(mcPct);
+}
+
+function pillClass(v, thresholds) {
+  if (v >= thresholds[1]) return "good";
+  if (v >= thresholds[0]) return "mid";
+  return "bad";
+}
+
+function renderPage() {
+  const total  = filtered.length;
+  const pages  = Math.ceil(total / PAGE_SIZE) || 1;
+  const start  = (currentPage - 1) * PAGE_SIZE;
+  const slice  = filtered.slice(start, start + PAGE_SIZE);
+
+  document.getElementById("row-count").textContent = `${total} registro${total !== 1 ? "s" : ""}`;
+  document.getElementById("page-info").textContent =
+    `Pág. ${currentPage} de ${pages} · ${total} registros`;
+
+  const body = document.getElementById("sales-body");
+
+  if (!slice.length) {
+    body.innerHTML = `<tr><td colspan="13"><div class="state-box">Nenhum registro encontrado</div></td></tr>`;
+    renderPagination(pages);
+    return;
+  }
+
+  body.innerHTML = slice.map(r => {
+    const mb  = parseFloat(r.margem_bruta_pct) || 0;
+    const mc  = parseFloat(r.margem_contribuicao_pct) || 0;
+    const mbC = pillClass(mb, [0.15, 0.3]);
+    const mcC = pillClass(mc, [0.1, 0.25]);
+    const dt  = r.data_venda ? r.data_venda.slice(0, 10).split("-").reverse().join("/") : "—";
+    return `<tr>
+      <td>${dt}</td>
+      <td><span class="badge-ml">${r.marketplace || "—"}</span></td>
+      <td class="pedido-col">${r.numero_pedido || "—"}</td>
+      <td class="pedido-col">${r.numero_anuncio || "—"}</td>
+      <td class="sku-col">${r.sku || "—"}</td>
+      <td class="titulo-col" title="${(r.titulo_anuncio||"").replace(/"/g,"&quot;")}">${r.titulo_anuncio || "—"}</td>
+      <td class="num">${brl(r.valor_vendido)}</td>
+      <td class="num">${brl(r.custo_mercadoria)}</td>
+      <td class="center"><span class="pill ${mbC}">${pct(mb)}</span></td>
+      <td class="num">${brl(r.custo_tarifa)}</td>
+      <td class="num">${brl(r.custo_frete)}</td>
+      <td class="num">${brl(r.custo_impostos)}</td>
+      <td class="center"><span class="pill ${mcC}">${pct(mc)}</span></td>
+    </tr>`;
+  }).join("");
+
+  renderPagination(pages);
+}
+
+function renderPagination(pages) {
+  const btns = document.getElementById("page-btns");
+  if (pages <= 1) { btns.innerHTML = ""; return; }
+
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?"disabled":""}>← Ant.</button>`;
+  const range = [];
+  for (let p = 1; p <= pages; p++) {
+    if (p === 1 || p === pages || Math.abs(p - currentPage) <= 2) range.push(p);
+    else if (range[range.length-1] !== "…") range.push("…");
+  }
+  range.forEach(p => {
+    if (p === "…") html += `<button class="page-btn" disabled>…</button>`;
+    else html += `<button class="page-btn ${p===currentPage?"active":""}" onclick="goPage(${p})">${p}</button>`;
+  });
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===pages?"disabled":""}>Próx. →</button>`;
+  btns.innerHTML = html;
+}
+
+function goPage(p) {
+  currentPage = p;
+  renderPage();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function clearFilters() {
+  ["f-date-from","f-date-to","f-titulo"].forEach(id => document.getElementById(id).value = "");
+  ["f-marketplace","f-sku"].forEach(id => document.getElementById(id).selectedIndex = 0);
+  applyFilters();
+}
+
+// Filtros em tempo real
+["f-date-from","f-date-to","f-marketplace","f-sku"].forEach(id =>
+  document.getElementById(id).addEventListener("change", applyFilters));
+document.getElementById("f-titulo").addEventListener("input", applyFilters);
+
+// Inicializa
+loadData();
+</script>
+</body>
+</html>
