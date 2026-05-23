@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Power Shop · Painel de Vendas</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 /* ── RESET & BASE ─────────────────────────── */
@@ -376,8 +375,8 @@ tr:hover td { background: rgba(255,255,255,.02); }
       <div class="nav-item" data-page="abc" onclick="switchPage('abc')">
         <span class="icon">🔠</span> Curva ABC
       </div>
-      <div class="nav-item" data-page="mapa" onclick="switchPage('mapa')">
-        <span class="icon">🗺️</span> Mapa
+      <div class="nav-item" data-page="mapa" style="opacity:.45;cursor:default;pointer-events:none">
+        <span class="icon">🗺️</span> Mapa <span style="font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;margin-left:6px;opacity:.7">em breve</span>
       </div>
     </nav>
     <button class="sync-btn" onclick="loadData()">↻ Sincronizar</button>
@@ -595,45 +594,10 @@ tr:hover td { background: rgba(255,255,255,.02); }
         <h1>Mapa de Pedidos</h1>
         <p>Distribuição geográfica dos destinos de envio</p>
       </div>
-      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));margin-bottom:20px">
-        <div class="kpi-card" style="--c:var(--accent)">
-          <div class="kpi-icon">📍</div>
-          <div class="kpi-label">Cidades Atendidas</div>
-          <div class="kpi-value" id="mapa-cidades">—</div>
-        </div>
-        <div class="kpi-card" style="--c:var(--accent2)">
-          <div class="kpi-icon">🗺️</div>
-          <div class="kpi-label">Estados Atendidos</div>
-          <div class="kpi-value" id="mapa-estados">—</div>
-        </div>
-        <div class="kpi-card" style="--c:var(--accent3)">
-          <div class="kpi-icon">🏆</div>
-          <div class="kpi-label">Cidade Top</div>
-          <div class="kpi-value" id="mapa-top-cidade" style="font-size:1rem">—</div>
-        </div>
-      </div>
-      <div class="chart-box" style="padding:0;overflow:hidden">
-        <div id="mapa-leaflet" style="height:460px;width:100%;border-radius:var(--radius);background:var(--surface2)"></div>
-      </div>
-      <div class="table-box" style="margin-top:24px">
-        <div class="table-top">
-          <h3>Ranking por Cidade</h3>
-          <span class="table-count" id="mapa-count">— cidades</span>
-        </div>
-        <div class="tbl-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Cidade</th>
-                <th>Estado</th>
-                <th>Pedidos</th>
-                <th>Valor Vendido</th>
-              </tr>
-            </thead>
-            <tbody id="tbody-mapa"></tbody>
-          </table>
-        </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:400px;gap:16px;color:var(--muted)">
+        <span style="font-size:3rem">🗺️</span>
+        <span style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;color:var(--dim)">Em breve</span>
+        <span style="font-size:.875rem;color:var(--muted);max-width:320px;text-align:center;line-height:1.6">A visualização geográfica dos pedidos está em desenvolvimento e será disponibilizada em breve.</span>
       </div>
     </div>
 
@@ -969,83 +933,6 @@ function switchPage(id) {
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   document.getElementById("page-" + id).classList.add("active");
   document.querySelector(`[data-page="${id}"]`).classList.add("active");
-  if (id === 'mapa') {
-    // Wait for page to be fully visible before rendering map
-    setTimeout(() => {
-      if (mapaInstance) { mapaInstance.remove(); mapaInstance = null; }
-      renderMapa();
-    }, 150);
-  }
-}
-
-// ── MAPA ───────────────────────────────────
-let mapaInstance = null;
-
-function renderMapa() {
-  // Agrupa por cidade
-  const byCidade = {};
-  filtered.forEach(r => {
-    if (!r.cidade || !r.lat || !r.lng) return;
-    const k = r.cidade + '|' + r.estado;
-    if (!byCidade[k]) byCidade[k] = { cidade: r.cidade, estado: r.estado, lat: +r.lat, lng: +r.lng, pedidos: 0, valor: 0 };
-    byCidade[k].pedidos += 1;
-    byCidade[k].valor   += +r.receita_produtos || 0;
-  });
-
-  const rows = Object.values(byCidade).sort((a,b) => b.pedidos - a.pedidos);
-  const estados = new Set(rows.map(r => r.estado));
-  const topCidade = rows[0];
-
-  document.getElementById('mapa-cidades').textContent = rows.length;
-  document.getElementById('mapa-estados').textContent = estados.size;
-  document.getElementById('mapa-top-cidade').textContent = topCidade ? topCidade.cidade : '—';
-  document.getElementById('mapa-count').textContent = rows.length + ' cidades';
-
-  // Tabela ranking
-  document.getElementById('tbody-mapa').innerHTML = rows.map((r,i) => `<tr>
-    <td style="color:var(--muted)">${i+1}</td>
-    <td><strong>${r.cidade}</strong></td>
-    <td>${r.estado}</td>
-    <td style="color:var(--accent)">${r.pedidos}</td>
-    <td style="color:var(--accent)">${brl(r.valor)}</td>
-  </tr>`).join('');
-
-  // Inicializa mapa Leaflet
-  if (mapaInstance) {
-    mapaInstance.remove();
-    mapaInstance = null;
-  }
-
-  const mapEl = document.getElementById('mapa-leaflet');
-  mapaInstance = L.map(mapEl, { zoomControl: true }).setView([-15.78, -47.93], 4);
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap © CARTO',
-    subdomains: 'abcd', maxZoom: 18
-  }).addTo(mapaInstance);
-
-  const maxPed = rows.length > 0 ? Math.max(...rows.map(r => r.pedidos)) : 1;
-
-  rows.forEach(r => {
-    const radius = 8 + (r.pedidos / maxPed) * 22;
-    const circle = L.circleMarker([r.lat, r.lng], {
-      radius,
-      fillColor: '#00e5a0',
-      color: '#00e5a0',
-      weight: 1,
-      opacity: 0.8,
-      fillOpacity: 0.35
-    }).addTo(mapaInstance);
-    circle.bindPopup(`
-      <div style="font-family:DM Sans,sans-serif;min-width:160px">
-        <strong style="font-size:.95rem">${r.cidade} - ${r.estado}</strong><br/>
-        <span style="color:#00e5a0">${r.pedidos} pedido${r.pedidos>1?'s':''}</span><br/>
-        <span>${brl(r.valor)}</span>
-      </div>
-    `);
-  });
-
-  setTimeout(() => mapaInstance.invalidateSize(), 200);
 }
 
 // ── INIT ───────────────────────────────────
