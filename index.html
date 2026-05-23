@@ -675,18 +675,18 @@ async function fetchSupabase(table, select = "*") {
 
 // ── LOAD ───────────────────────────────────
 async function loadData() {
-  document.getElementById("loadingOverlay").style.display = "flex";
+  const btn = document.querySelector('.sync-btn');
+  if (btn) btn.textContent = '↻ Carregando…';
   try {
-    const [pedidos] = await Promise.all([
-      fetchSupabase("pedidos"),
-    ]);
+    const pedidos = await fetchSupabase("pedidos");
     allData = pedidos;
     populateFilters();
     applyFilters();
-          `${allData.length} pedidos carregados · última atualização agora`;
   } catch(e) {
-      }
-  document.getElementById("loadingOverlay").style.display = "none";
+    console.error('Erro ao carregar dados:', e);
+    alert('Erro ao carregar dados: ' + e.message);
+  }
+  if (btn) btn.textContent = '↻ Sincronizar';
 }
 
 // ── FILTERS ────────────────────────────────
