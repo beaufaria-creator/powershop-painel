@@ -417,10 +417,20 @@ tr:hover td { background: rgba(255,255,255,.02); }
           </select>
         </div>
         <div class="filter-group">
-          <label>Anúncio</label>
+          <label>Anúncio ID</label>
+          <select id="f-anuncio-id" onchange="applyFilters()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Anúncio (título)</label>
           <select id="f-anuncio" onchange="applyFilters()">
             <option value="">Todos</option>
           </select>
+        </div>
+        <div class="filter-group" style="min-width:200px;flex:2">
+          <label>Busca por título</label>
+          <input type="text" id="f-titulo" placeholder="Digite parte do título..." oninput="applyFilters()"/>
         </div>
         <button class="btn-clear" onclick="clearFilters()">✕ Limpar</button>
       </div>
@@ -703,22 +713,27 @@ function populateFilters() {
   };
   sel("f-marketplace", allData.map(r => r.marketplace));
   sel("f-sku",         allData.map(r => r.sku));
+  sel("f-anuncio-id",  allData.map(r => r.anuncio_id));
   sel("f-anuncio",     allData.map(r => r.titulo_anuncio));
 }
 
 function applyFilters() {
   const mp  = document.getElementById("f-marketplace").value;
   const sku = document.getElementById("f-sku").value;
+  const aid = document.getElementById("f-anuncio-id").value;
   const an  = document.getElementById("f-anuncio").value;
+  const tit = document.getElementById("f-titulo").value.toLowerCase().trim();
   const di  = document.getElementById("f-data-ini").value;
   const df  = document.getElementById("f-data-fim").value;
 
   filtered = allData.filter(r => {
-    if (mp  && r.marketplace    !== mp)  return false;
-    if (sku && r.sku             !== sku) return false;
-    if (an  && r.titulo_anuncio !== an)  return false;
-    if (di  && r.data_venda < di)        return false;
-    if (df  && r.data_venda > df)        return false;
+    if (mp  && r.marketplace    !== mp)                                return false;
+    if (sku && r.sku             !== sku)                              return false;
+    if (aid && r.anuncio_id      !== aid)                              return false;
+    if (an  && r.titulo_anuncio  !== an)                               return false;
+    if (tit && !(r.titulo_anuncio||"").toLowerCase().includes(tit))    return false;
+    if (di  && r.data_venda < di)                                      return false;
+    if (df  && r.data_venda > df)                                      return false;
     return true;
   });
 
@@ -732,9 +747,8 @@ function applyFilters() {
 }
 
 function clearFilters() {
-  ["f-marketplace","f-sku","f-anuncio"].forEach(id => document.getElementById(id).value = "");
-  document.getElementById("f-data-ini").value = "";
-  document.getElementById("f-data-fim").value = "";
+  ["f-marketplace","f-sku","f-anuncio-id","f-anuncio"].forEach(id => document.getElementById(id).value = "");
+  ["f-data-ini","f-data-fim","f-titulo"].forEach(id => document.getElementById(id).value = "");
   applyFilters();
 }
 
@@ -746,7 +760,7 @@ const fmtData = v => {
   return d.getDate().toString().padStart(2,'0') + '-' + MESES_PT[d.getMonth()];
 };
 const brl = v => "R$ " + (+v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const pct = v => (+v || 0).toFixed(2) + "%";
+const pct = v => ((+v || 0) * 100).toFixed(2) + "%";
 const sum = (arr, k) => arr.reduce((a, r) => a + (+r[k] || 0), 0);
 
 // ── KPIs ───────────────────────────────────
@@ -767,11 +781,11 @@ function renderKPIs() {
   };
   set("kpi-vendido",  brl(vendido), "positive");
   set("kpi-cogs",     brl(cogs),    "negative");
-  set("kpi-mb",       pct(mb),      mb >= 30 ? "positive" : mb >= 15 ? "warning" : "negative");
+  set("kpi-mb",       mb.toFixed(2) + "%",  mb >= 30 ? "positive" : mb >= 15 ? "warning" : "negative");
   set("kpi-tarifa",   brl(tarifa),  "warning");
   set("kpi-frete",    brl(frete),   "warning");
   set("kpi-impostos", brl(imp),     "");
-  set("kpi-mc",       pct(mc),      mc >= 20 ? "positive" : mc >= 5 ? "warning" : "negative");
+  set("kpi-mc",       mc.toFixed(2) + "%",  mc >= 20 ? "positive" : mc >= 5 ? "warning" : "negative");
   const mcrs = vendido - cogs - tarifa - frete - imp;
   set("kpi-mc-rs",    brl(mcrs),    mcrs >= 0 ? "positive" : "negative");
   const pedidosUnicos = new Set(d.map(r => String(r.pedido).replace(/-[0-9]+(\.[0-9]+)?$/, ''))).size;
