@@ -517,6 +517,7 @@ tr:hover td { background: rgba(255,255,255,.02); }
                 <th onclick="sortTable('margem_contrib')">Mg Contrib R$ ↕</th>
                 <th onclick="sortTable('margem_contrib_pct')">Mg Contrib % ↕</th>
                 <th onclick="sortTable('repasse_meli')">Repasse MeLi ↕</th>
+                <th onclick="sortTable('mes_faturamento')">Mês Faturamento ↕</th>
               </tr>
             </thead>
             <tbody id="tbody-pedidos"></tbody>
@@ -745,7 +746,7 @@ const fmtData = v => {
   return d.getDate().toString().padStart(2,'0') + '-' + MESES_PT[d.getMonth()];
 };
 const brl = v => "R$ " + (+v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const pct = v => (+v || 0).toFixed(1) + "%";
+const pct = v => (+v || 0).toFixed(2) + "%";
 const sum = (arr, k) => arr.reduce((a, r) => a + (+r[k] || 0), 0);
 
 // ── KPIs ───────────────────────────────────
@@ -851,13 +852,14 @@ function renderTotals() {
     <td style="padding:10px 14px"></td>
     <td style="padding:10px 14px;text-align:right;color:var(--accent)">${brl(tots.receita_produtos)}</td>
     <td style="padding:10px 14px;text-align:right">${brl(tots.custo_mercadoria)}</td>
-    <td style="padding:10px 14px;text-align:right">${mb.toFixed(1)}%</td>
+    <td style="padding:10px 14px;text-align:right">${mb.toFixed(2)}%</td>
     <td style="padding:10px 14px;text-align:right;color:var(--accent3)">${brl(tots.tarifa_venda_impostos)}</td>
     <td style="padding:10px 14px;text-align:right;color:var(--accent3)">${brl(tots.tarifas_envio)}</td>
     <td style="padding:10px 14px;text-align:right">${brl(tots.custo_impostos)}</td>
     <td style="padding:10px 14px;text-align:right">${brl(tots.margem_contrib)}</td>
-    <td style="padding:10px 14px;text-align:right">${mc.toFixed(1)}%</td>
+    <td style="padding:10px 14px;text-align:right">${mc.toFixed(2)}%</td>
     <td style="padding:10px 14px;text-align:right;color:var(--accent2)">${brl(tots.repasse_meli)}</td>
+    <td style="padding:10px 14px"></td>
   </tr>`;
 }
 
@@ -900,6 +902,7 @@ function renderPedidos() {
         <td class="${mcCls}">${brl(+r.margem_contrib||0)}</td>
         <td class="${mcCls}">${pct(mcp)}</td>
         <td style="color:var(--accent2)">${brl(r.repasse_meli)}</td>
+        <td style="font-size:.8rem;color:var(--muted)">${r.mes_faturamento||"—"}</td>
       </tr>`;
     }).join("");
   }
