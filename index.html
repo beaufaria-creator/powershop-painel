@@ -613,7 +613,7 @@ tr:hover td { background: rgba(255,255,255,.02); }
         </div>
       </div>
       <div class="chart-box" style="padding:0;overflow:hidden">
-        <div id="mapa-leaflet" style="height:460px;width:100%;border-radius:var(--radius)"></div>
+        <div id="mapa-leaflet" style="height:460px;width:100%;border-radius:var(--radius);background:var(--surface2)"></div>
       </div>
       <div class="table-box" style="margin-top:24px">
         <div class="table-top">
@@ -727,7 +727,7 @@ function applyFilters() {
   renderPedidos();
   renderTotals();
   renderABC();
-  if (document.getElementById("page-mapa").classList.contains("active")) renderMapa();
+
 }
 
 function clearFilters() {
@@ -965,11 +965,17 @@ function renderABC() {
 
 // ── NAV ────────────────────────────────────
 function switchPage(id) {
-  if (id === 'mapa') setTimeout(renderMapa, 50);
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   document.getElementById("page-" + id).classList.add("active");
   document.querySelector(`[data-page="${id}"]`).classList.add("active");
+  if (id === 'mapa') {
+    // Wait for page to be fully visible before rendering map
+    setTimeout(() => {
+      if (mapaInstance) { mapaInstance.remove(); mapaInstance = null; }
+      renderMapa();
+    }, 150);
+  }
 }
 
 // ── MAPA ───────────────────────────────────
