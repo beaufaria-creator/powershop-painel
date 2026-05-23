@@ -360,12 +360,6 @@ tr:hover td { background: rgba(255,255,255,.02); }
 </head>
 <body>
 
-<!-- LOADING -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-text">Carregando dados do Supabase…</div>
-</div>
-
 <div class="shell">
   <!-- SIDEBAR -->
   <aside class="sidebar">
@@ -387,13 +381,13 @@ tr:hover td { background: rgba(255,255,255,.02); }
   <!-- MAIN -->
   <main class="main">
 
-    <!-- ─── ABA 1: VISÃO GERAL ─────────────────── -->
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- ABA 1: VISÃO GERAL                          -->
+    <!-- ═══════════════════════════════════════════ -->
     <div class="page active" id="page-visao">
       <div class="page-header">
         <h1>Visão Geral</h1>
         <p>Análise consolidada de vendas e margens</p>
-      </div>
-<span id="statusText">Aguardando dados…</span>
       </div>
 
       <div class="filters">
@@ -482,9 +476,12 @@ tr:hover td { background: rgba(255,255,255,.02); }
       <div class="chart-box">
         <h3>Evolução Temporal — Valor Vendido, Custos e Margem de Contribuição</h3>
         <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
+      </div>
     </div>
 
-    <!-- ─── ABA 2: PEDIDOS ────────────────────── -->
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- ABA 2: PEDIDOS                              -->
+    <!-- ═══════════════════════════════════════════ -->
     <div class="page" id="page-pedidos">
       <div class="page-header">
         <h1>Pedidos</h1>
@@ -533,7 +530,9 @@ tr:hover td { background: rgba(255,255,255,.02); }
       </div>
     </div>
 
-    <!-- ─── ABA 3: CURVA ABC ──────────────────── -->
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- ABA 3: CURVA ABC                            -->
+    <!-- ═══════════════════════════════════════════ -->
     <div class="page" id="page-abc">
       <div class="page-header">
         <h1>Curva ABC</h1>
@@ -544,17 +543,17 @@ tr:hover td { background: rgba(255,255,255,.02); }
         <div class="kpi-card" style="--c:var(--accent)">
           <div class="kpi-label">Curva A</div>
           <div class="kpi-value positive" id="abc-a-count">—</div>
-          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">≥ 40% fat.</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">0–40% fat.</div>
         </div>
         <div class="kpi-card" style="--c:var(--accent2)">
           <div class="kpi-label">Curva B</div>
           <div class="kpi-value" id="abc-b-count" style="color:var(--accent2)">—</div>
-          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">30% fat.</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">40–70% fat.</div>
         </div>
         <div class="kpi-card" style="--c:var(--accent3)">
           <div class="kpi-label">Curva C</div>
           <div class="kpi-value warning" id="abc-c-count">—</div>
-          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">30% fat.</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">70–100% fat.</div>
         </div>
       </div>
 
@@ -581,7 +580,7 @@ tr:hover td { background: rgba(255,255,255,.02); }
           </table>
         </div>
       </div>
-    </div>
+    
 
   </main>
 </div>
