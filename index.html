@@ -396,34 +396,34 @@ tr:hover td { background: rgba(255,255,255,.02); }
 <span id="statusText">Aguardando dados…</span>
       </div>
 
-      <div class="filters" style="flex-wrap:nowrap;align-items:flex-end">
+      <div class="filters">
         <div class="filter-group">
-          <label>Período</label>
-          <div style="display:flex;gap:6px;align-items:center">
-            <input type="date" id="f-data-ini" onchange="applyFilters()" style="min-width:120px"/>
-            <span style="color:var(--muted);font-size:.8rem">até</span>
-            <input type="date" id="f-data-fim" onchange="applyFilters()" style="min-width:120px"/>
-          </div>
+          <label>Data início</label>
+          <input type="date" id="f-data-ini" onchange="applyFilters()"/>
+        </div>
+        <div class="filter-group">
+          <label>Data fim</label>
+          <input type="date" id="f-data-fim" onchange="applyFilters()"/>
         </div>
         <div class="filter-group">
           <label>Marketplace</label>
-          <select id="f-marketplace" onchange="applyFilters()" style="min-width:110px">
+          <select id="f-marketplace" onchange="applyFilters()">
             <option value="">Todos</option>
           </select>
         </div>
         <div class="filter-group">
           <label>SKU</label>
-          <select id="f-sku" onchange="applyFilters()" style="min-width:100px">
+          <select id="f-sku" onchange="applyFilters()">
             <option value="">Todos</option>
           </select>
         </div>
         <div class="filter-group">
           <label>Anúncio</label>
-          <select id="f-anuncio" onchange="applyFilters()" style="min-width:120px;max-width:180px">
+          <select id="f-anuncio" onchange="applyFilters()">
             <option value="">Todos</option>
           </select>
         </div>
-        <button class="btn-clear" onclick="clearFilters()" style="flex-shrink:0;align-self:flex-end">✕ Limpar</button>
+        <button class="btn-clear" onclick="clearFilters()">✕ Limpar</button>
       </div>
 
       <div class="kpi-grid">
@@ -519,6 +519,11 @@ tr:hover td { background: rgba(255,255,255,.02); }
               </tr>
             </thead>
             <tbody id="tbody-pedidos"></tbody>
+          </table>
+        </div>
+        <div class="tbl-wrap" style="border-top:2px solid var(--border)">
+          <table>
+            <tbody id="tbody-totals"></tbody>
           </table>
         </div>
         <div class="pagination">
@@ -667,6 +672,7 @@ function applyFilters() {
   renderKPIs();
   renderChart();
   renderPedidos();
+  renderTotals();
   renderABC();
 }
 
@@ -773,6 +779,27 @@ let sortedData = [];
 function sortTable(field) {
   if (sortField === field) sortAsc = !sortAsc; else { sortField = field; sortAsc = true; }
   renderPedidos();
+}
+
+function renderTotals() {
+  const cols = ["receita_produtos","custo_mercadoria","tarifa_venda_impostos","tarifas_envio","custo_impostos","margem_contrib","repasse_meli"];
+  const tots = {};
+  cols.forEach(c => tots[c] = filtered.reduce((a,r) => a + (+r[c]||0), 0));
+  const vendido = tots["receita_produtos"];
+  const mb      = vendido ? (vendido - tots["custo_mercadoria"]) / vendido * 100 : 0;
+  const mc      = vendido ? tots["margem_contrib"] / vendido * 100 : 0;
+  document.getElementById("tbody-totals").innerHTML = `<tr style="font-weight:600;color:var(--text);background:var(--surface2)">
+    <td colspan="6" style="padding:10px 14px;font-size:.8rem;letter-spacing:.05em">TOTAL</td>
+    <td style="padding:10px 14px;color:var(--accent)">${brl(tots.receita_produtos)}</td>
+    <td style="padding:10px 14px">${brl(tots.custo_mercadoria)}</td>
+    <td style="padding:10px 14px">${mb.toFixed(1)}%</td>
+    <td style="padding:10px 14px;color:var(--accent3)">${brl(tots.tarifa_venda_impostos)}</td>
+    <td style="padding:10px 14px;color:var(--accent3)">${brl(tots.tarifas_envio)}</td>
+    <td style="padding:10px 14px">${brl(tots.custo_impostos)}</td>
+    <td style="padding:10px 14px">${brl(tots.margem_contrib)}</td>
+    <td style="padding:10px 14px">${mc.toFixed(1)}%</td>
+    <td style="padding:10px 14px;color:var(--accent2)">${brl(tots.repasse_meli)}</td>
+  </tr>`;
 }
 
 function renderPedidos() {
