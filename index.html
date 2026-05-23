@@ -401,6 +401,14 @@ tr:hover td { background: rgba(255,255,255,.02); }
 
       <div class="filters">
         <div class="filter-group">
+          <label>Período</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="date" id="f-data-ini" onchange="applyFilters()" style="min-width:130px"/>
+            <span style="color:var(--muted);font-size:.8rem">até</span>
+            <input type="date" id="f-data-fim" onchange="applyFilters()" style="min-width:130px"/>
+          </div>
+        </div>
+        <div class="filter-group">
           <label>Marketplace</label>
           <select id="f-marketplace" onchange="applyFilters()">
             <option value="">Todos</option>
@@ -417,14 +425,6 @@ tr:hover td { background: rgba(255,255,255,.02); }
           <select id="f-anuncio" onchange="applyFilters()">
             <option value="">Todos</option>
           </select>
-        </div>
-        <div class="filter-group">
-          <label>Data início</label>
-          <input type="date" id="f-data-ini" onchange="applyFilters()"/>
-        </div>
-        <div class="filter-group">
-          <label>Data fim</label>
-          <input type="date" id="f-data-fim" onchange="applyFilters()"/>
         </div>
         <button class="btn-clear" onclick="clearFilters()">✕ Limpar</button>
       </div>
@@ -461,14 +461,14 @@ tr:hover td { background: rgba(255,255,255,.02); }
           <div class="kpi-value" id="kpi-impostos">—</div>
         </div>
         <div class="kpi-card" style="--c:var(--accent)">
-          <div class="kpi-icon">🎯</div>
-          <div class="kpi-label">Margem Contribuição %</div>
-          <div class="kpi-value" id="kpi-mc">—</div>
-        </div>
-        <div class="kpi-card" style="--c:var(--accent)">
           <div class="kpi-icon">💵</div>
           <div class="kpi-label">Margem Contribuição R$</div>
           <div class="kpi-value" id="kpi-mc-rs">—</div>
+        </div>
+        <div class="kpi-card" style="--c:var(--accent)">
+          <div class="kpi-icon">🎯</div>
+          <div class="kpi-label">Margem Contribuição %</div>
+          <div class="kpi-value" id="kpi-mc">—</div>
         </div>
         <div class="kpi-card" style="--c:var(--accent2)">
           <div class="kpi-icon">🛒</div>
@@ -511,7 +511,9 @@ tr:hover td { background: rgba(255,255,255,.02); }
                 <th onclick="sortTable('tarifa_venda_impostos')">Tarifa ↕</th>
                 <th onclick="sortTable('tarifas_envio')">Frete ↕</th>
                 <th>Impostos</th>
+                <th onclick="sortTable('margem_contrib')">Mg Contrib R$ ↕</th>
                 <th onclick="sortTable('margem_contrib_pct')">Mg Contrib % ↕</th>
+                <th onclick="sortTable('repasse_meli')">Repasse MeLi ↕</th>
               </tr>
             </thead>
             <tbody id="tbody-pedidos"></tbody>
@@ -676,6 +678,12 @@ function clearFilters() {
 }
 
 // ── UTILS ──────────────────────────────────
+const MESES_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const fmtData = v => {
+  if (!v) return '—';
+  const d = new Date(v + 'T00:00:00');
+  return d.getDate().toString().padStart(2,'0') + '-' + MESES_PT[d.getMonth()];
+};
 const brl = v => "R$ " + (+v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const pct = v => (+v || 0).toFixed(1) + "%";
 const sum = (arr, k) => arr.reduce((a, r) => a + (+r[k] || 0), 0);
@@ -705,7 +713,8 @@ function renderKPIs() {
   set("kpi-mc",       pct(mc),      mc >= 20 ? "positive" : mc >= 5 ? "warning" : "negative");
   const mcrs = vendido - cogs - tarifa - frete - imp;
   set("kpi-mc-rs",    brl(mcrs),    mcrs >= 0 ? "positive" : "negative");
-  set("kpi-pedidos",  d.length,     "");
+  const pedidosUnicos = new Set(d.map(r => String(r.pedido).replace(/-\d+$/, ''))).size;
+  set("kpi-pedidos",  pedidosUnicos, "");
 }
 
 // ── CHART ──────────────────────────────────
@@ -788,7 +797,7 @@ function renderPedidos() {
       const mcCls = mcp>=20?"positive":mcp>=5?"warning":"negative";
       const titulo = (r.titulo_anuncio||"").slice(0,35) + ((r.titulo_anuncio||"").length>35?"…":"");
       return `<tr>
-        <td>${r.data_venda||"—"}</td>
+        <td>${fmtData(r.data_venda)}</td>
         <td>${r.marketplace||"—"}</td>
         <td style="font-size:.75rem;color:var(--muted)">${r.pedido||"—"}</td>
         <td style="font-size:.75rem">${r.anuncio_id||"—"}</td>
@@ -800,7 +809,9 @@ function renderPedidos() {
         <td style="color:var(--accent3)">${brl(r.tarifa_venda_impostos)}</td>
         <td style="color:var(--accent3)">${brl(r.tarifas_envio)}</td>
         <td>${brl(r.custo_impostos)}</td>
+        <td class="${mcCls}">${brl(+r.margem_contrib||0)}</td>
         <td class="${mcCls}">${pct(mcp)}</td>
+        <td style="color:var(--accent2)">${brl(r.repasse_meli)}</td>
       </tr>`;
     }).join("");
   }
@@ -832,7 +843,7 @@ function renderABC() {
     r.pct  = grand ? r.total/grand*100 : 0;
     acum  += r.pct;
     r.acum = acum;
-    r.curva = acum <= 40 ? "A" : acum <= 70 ? "B" : "C";
+    r.curva = acum <= 40 ? "A" : acum <= 70 ? "B" : "C"; // A: 0-40%, B: 40-70%, C: 70-100%
     if (r.curva==="A") cntA++;
     else if (r.curva==="B") cntB++;
     else cntC++;
