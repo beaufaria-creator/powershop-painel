@@ -393,40 +393,37 @@ tr:hover td { background: rgba(255,255,255,.02); }
         <h1>Visão Geral</h1>
         <p>Análise consolidada de vendas e margens</p>
       </div>
-
-      <div class="status-bar" id="statusBar">
-        <div class="status-dot"></div>
-        <span id="statusText">Aguardando dados…</span>
+<span id="statusText">Aguardando dados…</span>
       </div>
 
-      <div class="filters">
+      <div class="filters" style="flex-wrap:nowrap;align-items:flex-end">
         <div class="filter-group">
           <label>Período</label>
           <div style="display:flex;gap:6px;align-items:center">
-            <input type="date" id="f-data-ini" onchange="applyFilters()" style="min-width:130px"/>
+            <input type="date" id="f-data-ini" onchange="applyFilters()" style="min-width:120px"/>
             <span style="color:var(--muted);font-size:.8rem">até</span>
-            <input type="date" id="f-data-fim" onchange="applyFilters()" style="min-width:130px"/>
+            <input type="date" id="f-data-fim" onchange="applyFilters()" style="min-width:120px"/>
           </div>
         </div>
         <div class="filter-group">
           <label>Marketplace</label>
-          <select id="f-marketplace" onchange="applyFilters()">
+          <select id="f-marketplace" onchange="applyFilters()" style="min-width:110px">
             <option value="">Todos</option>
           </select>
         </div>
         <div class="filter-group">
           <label>SKU</label>
-          <select id="f-sku" onchange="applyFilters()">
+          <select id="f-sku" onchange="applyFilters()" style="min-width:100px">
             <option value="">Todos</option>
           </select>
         </div>
         <div class="filter-group">
           <label>Anúncio</label>
-          <select id="f-anuncio" onchange="applyFilters()">
+          <select id="f-anuncio" onchange="applyFilters()" style="min-width:120px;max-width:180px">
             <option value="">Todos</option>
           </select>
         </div>
-        <button class="btn-clear" onclick="clearFilters()">✕ Limpar</button>
+        <button class="btn-clear" onclick="clearFilters()" style="flex-shrink:0;align-self:flex-end">✕ Limpar</button>
       </div>
 
       <div class="kpi-grid">
@@ -628,11 +625,9 @@ async function loadData() {
     allData = pedidos;
     populateFilters();
     applyFilters();
-    document.getElementById("statusText").textContent =
-      `${allData.length} pedidos carregados · última atualização agora`;
+          `${allData.length} pedidos carregados · última atualização agora`;
   } catch(e) {
-    document.getElementById("statusText").textContent = "⚠ Erro ao carregar: " + e.message;
-  }
+      }
   document.getElementById("loadingOverlay").style.display = "none";
 }
 
