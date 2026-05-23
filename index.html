@@ -718,7 +718,7 @@ function renderKPIs() {
   set("kpi-mc",       pct(mc),      mc >= 20 ? "positive" : mc >= 5 ? "warning" : "negative");
   const mcrs = vendido - cogs - tarifa - frete - imp;
   set("kpi-mc-rs",    brl(mcrs),    mcrs >= 0 ? "positive" : "negative");
-  const pedidosUnicos = new Set(d.map(r => String(r.pedido).replace(/-[0-9]+$/, ''))).size;
+  const pedidosUnicos = new Set(d.map(r => String(r.pedido).replace(/-[0-9]+(\.[0-9]+)?$/, ''))).size;
   set("kpi-pedidos",  pedidosUnicos, "");
   const ticket = pedidosUnicos > 0 ? vendido / pedidosUnicos : 0;
   set("kpi-ticket", brl(ticket), "positive");
